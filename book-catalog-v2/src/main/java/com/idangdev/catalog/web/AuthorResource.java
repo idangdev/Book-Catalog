@@ -20,11 +20,13 @@ import com.idangdev.catalog.dto.AuthorResponseDTO;
 import com.idangdev.catalog.dto.AuthorUpdateRequestDTO;
 import com.idangdev.catalog.service.AuthorService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 
 @Validated
 @AllArgsConstructor
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 public class AuthorResource {
 
 	private final AuthorService authorService;

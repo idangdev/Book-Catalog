@@ -24,11 +24,13 @@ import com.idangdev.catalog.dto.ResultPageResponseDTO;
 import com.idangdev.catalog.exception.BadRequestException;
 import com.idangdev.catalog.service.PublisherService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 
 @Validated
 @RestController
 @AllArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class PublisherResource {
 
 	private final PublisherService publisherService;

@@ -14,10 +14,12 @@ import com.idangdev.catalog.dto.CategoryListResponseDTO;
 import com.idangdev.catalog.dto.ResultPageResponseDTO;
 import com.idangdev.catalog.service.CategoryService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class CategoryResource {
 
 	private final CategoryService categoryService;

@@ -1,5 +1,8 @@
 package com.idangdev.catalog.config;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +17,12 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.idangdev.catalog.security.filter.JWTAuthenticationFilter;
 import com.idangdev.catalog.security.filter.UsernamePasswordAuthenticationFilter;
+import com.idangdev.catalog.security.provider.JwtAuthenticationProvider;
 import com.idangdev.catalog.security.provider.UsernamePasswordAuthProvider;
+import com.idangdev.catalog.security.util.SkipPathRequestMatcher;
+import com.idangdev.catalog.security.util.TokenExtractor;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -39,10 +46,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private UsernamePasswordAuthProvider usernamePasswordAuthProvider;
 	
 	@Autowired
+	private JwtAuthenticationProvider jwtAuthenticationProvider;
+	
+	@Autowired
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	@Autowired
+	private TokenExtractor tokenExtractor;
 	
 	
 	@Bean
@@ -56,6 +69,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 //		auth.userDetailsService(appUserService).passwordEncoder(passwordEncoder());
 		auth.authenticationProvider(usernamePasswordAuthProvider);
+		auth.authenticationProvider(jwtAuthenticationProvider);
+	}
+	
+	protected JWTAuthenticationFilter  buildJwtAuthFilter(List<String> pathToSkip, List<String> patternList) {	// pathToSkip (URL yang di skip / yg tidak perlu melalui athentikasi JWT), pattertList itu kebalikan dari pathToSkip
+		SkipPathRequestMatcher matches = new SkipPathRequestMatcher(pathToSkip, patternList);
+		JWTAuthenticationFilter filter = new JWTAuthenticationFilter(tokenExtractor, failureHandler, matches);
+		filter.setAuthenticationManager(authenticationManager);
+		return filter;
+		// ant matcher
 	}
 	
 	// method untuk meng construct filter yang telah kita buat sebelumnya
@@ -67,6 +89,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		List<String> permitAllEndpointList = Arrays.asList(
+				"/v1/login"
+				);
+		
+		List<String> authenticatedEndpointList = Arrays.asList(
+				V1_URL,
+				V2_URL
+				);
 		// saya ingin semua request itu di autentikasi
 		http.authorizeRequests().antMatchers(V1_URL, V2_URL).authenticated()
 		.and()					// menambahkan konfigurasi lain
@@ -74,7 +104,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)		// menambahkan session management
 		.and()					// menambahkan konfigurasi lain
 //		.httpBasic();			// menambahkan httpBasic
-		.addFilterBefore(buildUsernamePasswordAuthFilter("/v1/login"), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
-		
+		.addFilterBefore(buildUsernamePasswordAuthFilter("/v1/login"), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+		.addFilterBefore(buildJwtAuthFilter(permitAllEndpointList, authenticatedEndpointList), UsernamePasswordAuthenticationFilter.class);
 	}
 }

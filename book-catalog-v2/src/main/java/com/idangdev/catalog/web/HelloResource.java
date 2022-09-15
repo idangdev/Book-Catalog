@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.idangdev.catalog.dto.HelloMessageResponseDTO;
 import com.idangdev.catalog.service.GreetingService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 public class HelloResource {
 
 	Logger log = LoggerFactory.getLogger(HelloResource.class);

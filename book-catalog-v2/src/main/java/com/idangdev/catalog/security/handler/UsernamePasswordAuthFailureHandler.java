@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Component
 public class UsernamePasswordAuthFailureHandler implements AuthenticationFailureHandler{
 
